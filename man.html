@@ -90,6 +90,7 @@ body[data-role="man"]{--glow:rgba(160,170,240,.36)}
 .h.soon{padding:2px 9px;border:1px solid var(--lav-faint);border-radius:999px}
 .tile:focus-visible,.back:focus-visible,.btn-primary:focus-visible,.btn-ghost:focus-visible,.yt:focus-visible{outline:2px solid var(--moon);outline-offset:3px}
 [data-bgm-slot]{display:contents}
+.menu-note{margin-top:2px;font-size:13.5px;text-align:center;color:var(--lav-dim);word-break:keep-all}
 .figs{display:block;width:250px;margin:44px auto 0;opacity:.85}
 
 /* 하위 화면 */
@@ -240,6 +241,39 @@ a.btn-ghost{display:flex;align-items:center;justify-content:center;margin-top:16
 .confirm-p{font-size:15px;line-height:1.75;text-align:center;color:var(--lav);word-break:keep-all}
 .hint-btn:focus-visible,.prev:focus-visible,.reset:focus-visible{outline:2px solid var(--moon);outline-offset:3px}
 
+/* 항목별 5지선다 */
+.item{margin:0 0 20px;padding:0;border:0;min-width:0}
+.item legend{display:flex;gap:10px;align-items:flex-start;width:100%;margin-bottom:10px;padding:0;font-size:16px;line-height:1.65;color:var(--text);word-break:keep-all}
+.item-no{flex:none;width:24px;height:24px;margin-top:1px;border-radius:50%;background:rgba(236,201,156,.16);border:1px solid rgba(236,201,156,.5);
+  font-size:13px;line-height:22px;text-align:center;color:var(--moon)}
+.item .opts{gap:7px;margin-bottom:0}
+.item .opt{grid-template-columns:24px 1fr;align-items:start;padding:10px 12px}
+.item .opt-no{font-size:17px;line-height:1.45}
+.opt-t{font-size:15px;line-height:1.65;color:var(--text);word-break:keep-all}
+.item.missing .opt{border-color:rgba(240,150,170,.75)}
+.item.missing legend{color:#f4b8c8}
+.note-msg{margin:-4px 0 14px;font-size:14.5px;line-height:1.75;color:var(--lav);word-break:keep-all}
+.ritems{list-style:none;display:grid;gap:10px;margin-bottom:18px}
+.ritem{padding:13px 14px;border:1px solid var(--lav-line);border-radius:3px;background:rgba(26,15,46,.6)}
+.ritem.ok{border-color:rgba(236,201,156,.55)}
+.ritem-q{display:flex;gap:8px;align-items:flex-start;font-size:15px;line-height:1.6;color:var(--lav);word-break:keep-all}
+.mark{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:1px;border-radius:50%}
+.mark svg{width:14px;height:14px}
+.ritem.ok .mark{color:#2a1b40;background:var(--moon)}
+.ritem.no .mark{color:var(--text);background:rgba(164,147,201,.35)}
+.ritem.note .mark{color:var(--text);background:rgba(164,147,201,.2);border:1px solid var(--lav-line)}
+.ritem-a,.ritem-p{margin-top:7px;padding-left:30px;font-size:15.5px;line-height:1.65;color:var(--text);word-break:keep-all}
+.ritem-p{font-size:14px;color:var(--lav-dim)}
+.tag{display:inline-block;margin-right:8px;padding:0 7px;border-radius:2px;font-size:12px;line-height:20px;vertical-align:1px;
+  color:#2a1b40;background:var(--moon)}
+.ritem-p .tag{color:var(--lav);background:transparent;border:1px solid var(--lav-line);line-height:18px}
+.explain-h{margin-bottom:4px;font-size:13px;letter-spacing:.14em;color:var(--lav-dim)}
+.explain .explain-h+p{margin-top:0}
+.sum{list-style:none;display:grid;gap:8px;max-height:46svh;overflow:auto;padding:12px 14px;border:1px solid var(--lav-line);border-radius:3px;background:rgba(26,15,46,.6)}
+.sum li{display:grid;grid-template-columns:18px 22px 1fr;gap:6px;font-size:14.5px;line-height:1.6;color:var(--text);word-break:keep-all}
+.sum-n{color:var(--lav-dim)} .sum-k{color:var(--moon)}
+.prog li.r-part{color:var(--text);background:linear-gradient(90deg,rgba(236,201,156,.45) 50%,rgba(164,147,201,.3) 50%);border-color:transparent}
+.record .r-res.is-part,.record .r-res.is-note{color:var(--lav)}
 .toast{position:fixed;left:50%;bottom:calc(28px + var(--safe-b));z-index:30;transform:translateX(-50%);max-width:88vw;
   padding:11px 18px;border:1px solid var(--lav-line);border-radius:999px;background:rgba(30,19,54,.95);
   font-size:14.5px;color:var(--text);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -268,7 +302,9 @@ a.btn-ghost{display:flex;align-items:center;justify-content:center;margin-top:16
  </header>
  <nav class="menu" aria-label="메뉴">
 <a class="tile primary" href="#letter"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg><span class="t">게임 시작 전</span><span class="h">편지 쓰기</span></a>
+<span data-bgm-slot><button type="button" class="tile" aria-disabled="true" data-soon="수상한 한의원 BGM"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M9 17V5l10-2v12"/><circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="15" r="2.2"/></svg><span class="t">수상한 한의원 BGM</span><span class="h soon">준비 중</span></button></span>
 <a class="tile" href="#pv"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></svg><span class="t">수상한 한의원 원작 PV</span><span class="h">영상 보기</span></a>
+<p class="menu-note">BGM은 두 귀신 중 한 사람만 틀어 주세요.</p>
  </nav>
  <svg class="figs" viewBox="0 0 300 110" aria-hidden="true"><defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f74c4"/><stop offset="1" stop-color="#8f74c4" stop-opacity="0"/></linearGradient><linearGradient id="fb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb2ea"/><stop offset="1" stop-color="#7fb2ea" stop-opacity="0"/></linearGradient></defs><path d="M39.4 110 L39.4 60.34 Q39.4 43.6 58 43.6 Q76.6 43.6 76.6 60.34 L76.6 110Z" fill="url(#fg)"/><circle cx="58" cy="34" r="12" fill="url(#fg)"/><circle cx="54.2" cy="35.0" r="1.3" fill="#1b1030"/><circle cx="61.8" cy="35.0" r="1.3" fill="#1b1030"/><path d="M80.5 110 L80.5 85.95 Q80.5 72.0 96 72.0 Q111.5 72.0 111.5 85.95 L111.5 110Z" fill="url(#fg)"/><circle cx="96" cy="64" r="10" fill="url(#fg)"/><circle cx="92.8" cy="65.0" r="1.3" fill="#1b1030"/><circle cx="99.2" cy="65.0" r="1.3" fill="#1b1030"/><path d="M125.85 110 L125.85 59.535 Q125.85 41.4 146 41.4 Q166.15 41.4 166.15 59.535 L166.15 110Z" fill="url(#fg)"/><circle cx="146" cy="31" r="13" fill="url(#fg)"/><circle cx="141.8" cy="32.0" r="1.3" fill="#1b1030"/><circle cx="150.2" cy="32.0" r="1.3" fill="#1b1030"/><path d="M174.5 110 L174.5 81.95 Q174.5 68.0 190 68.0 Q205.5 68.0 205.5 81.95 L205.5 110Z" fill="url(#fb)"/><circle cx="190" cy="60" r="10" fill="url(#fb)"/><circle cx="186.8" cy="61.0" r="1.3" fill="#1b1030"/><circle cx="193.2" cy="61.0" r="1.3" fill="#1b1030"/><path d="M213.4 110 L213.4 64.34 Q213.4 47.6 232 47.6 Q250.6 47.6 250.6 64.34 L250.6 110Z" fill="url(#fg)"/><circle cx="232" cy="38" r="12" fill="url(#fg)"/><circle cx="228.2" cy="39.0" r="1.3" fill="#1b1030"/><circle cx="235.8" cy="39.0" r="1.3" fill="#1b1030"/></svg>
 </section>
@@ -382,16 +418,20 @@ const QUIZ = null;
   }
   addEventListener('hashchange', route); route();
 
-  /* 정답 선택 페이지 (승범) */
+  /* 정답 선택 페이지 (승범) — 항목마다 5지선다 */
   (function initQuiz(){
     const box = $('#quiz');
     if (!QUIZ || !box) return;
     const P = QUIZ.problems, N = P.length, L = QUIZ.labels, END = 1 + 2 * N;
-    const KEY = 'shh-answers-v1';
+    const KEY = 'shh-answers-v2';
     const progEl = $('#prog'), resetBtn = $('#quizReset');
     const tileHint = document.querySelector('#ansTile .h');
     const cf = $('#confirm'), cfTitle = $('#confirmTitle'), cfBody = $('#confirmBody'), cfOk = $('#confirmOk'), cfNo = $('#confirmNo');
-    const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    const ICON = {
+      ok: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+      no: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+      note: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg>'
+    };
     const BULB = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.8.6 1.1 1.4 1.1 2.2h5c0-.8.3-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg>';
     const fresh = () => ({ step: 0, picks: {}, hints: {} });
     let S = load(), cfAction = null;
@@ -411,13 +451,21 @@ const QUIZ = null;
       if (step >= END) return { kind: 'end' };
       return { kind: (step - 1) % 2 === 0 ? 'q' : 'a', i: Math.floor((step - 1) / 2) };
     }
-    function result(i){
-      const p = P[i];
-      if (!p.options) return 'none';
-      const k = S.picks[p.id];
+    const picksOf = p => (S.picks[p.id] = S.picks[p.id] || []);
+    function itemState(p, j){
+      const k = (S.picks[p.id] || [])[j], it = p.items[j];
       if (k == null) return 'no';
-      if (p.notes && p.notes[k] != null) return 'note';
-      return k === p.answer ? 'ok' : 'no';
+      if (k === it.answer) return 'ok';
+      return it.note && it.note[k] ? 'note' : 'no';
+    }
+    function score(i){
+      const p = P[i];
+      if (!p.items) return { kind: 'none', ok: 0, total: 0, note: 0 };
+      let ok = 0, note = 0;
+      p.items.forEach((it, j) => { const s = itemState(p, j); if (s === 'ok') ok++; else if (s === 'note') note++; });
+      const total = p.items.length;
+      const kind = ok === total ? 'ok' : (note && ok + note === total) ? 'note' : ok ? 'part' : 'no';
+      return { kind, ok, total, note };
     }
     const lines = rows => '<dl class="lines">' + rows.map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd></div>').join('') + '</dl>';
     const cue = arr => '<div class="cue"><p class="cue-h">다음 진행</p><ol>' + arr.map(t => '<li>' + esc(t) + '</li>').join('') + '</ol></div>';
@@ -425,25 +473,26 @@ const QUIZ = null;
 
     function intro(){
       return '<p class="eyebrow">정답 선택 페이지</p><h2 class="v-title">시작하기 전에</h2>'
-        + '<div class="panel"><p>플레이어들이 토론으로 합의한 답을 승범이 이곳에서 고릅니다. 모두 ' + N + '문제이며, 5화는 답을 고르지 않고 힌트만 있습니다.</p>'
+        + '<div class="panel"><p>플레이어들이 토론으로 합의한 답을 승범이 이곳에서 고릅니다. 모두 ' + N + '문제이며, 책자의 항목마다 보기 5개 중 하나를 고릅니다. 5화는 답을 고르지 않고 힌트만 있습니다.</p>'
         + '<ul class="rules"><li>책자의 문제 페이지가 나오기 전에는 넘기지 마세요. 「넘기기」를 누를 때마다 한 단계씩 넘어갑니다.</li>'
-        + '<li>답을 고르고 「넘기기」를 누르면 정답이 나옵니다.</li>'
+        + '<li>모든 항목의 답을 고르고 「넘기기」를 누르면 정답이 나옵니다.</li>'
         + '<li>한 문제에서 5~10분 넘게 막히면 「힌트 보기」로 힌트를 하나씩 꺼내 전해 주세요.</li></ul></div>'
         + cue(QUIZ.introNext)
         + '<button type="button" class="btn-primary" data-act="next">넘기기</button>';
     }
 
     function question(i){
-      const p = P[i], pick = S.picks[p.id], shown = Math.min(S.hints[p.id] || 0, p.hints.length);
+      const p = P[i], pk = S.picks[p.id] || [], shown = Math.min(S.hints[p.id] || 0, p.hints.length);
       let h = head(i, p.title)
-        + '<div class="ask">' + p.ask.map(t => '<p' + (t.charAt(0) === '※' ? ' class="ask-note"' : '') + '>' + esc(t) + '</p>').join('')
-        + (p.subs.length ? '<ol class="subs">' + p.subs.map(t => '<li>' + esc(t) + '</li>').join('') + '</ol>' : '') + '</div>';
+        + '<div class="ask">' + p.ask.map(t => '<p' + (t.charAt(0) === '※' ? ' class="ask-note"' : '') + '>' + esc(t) + '</p>').join('') + '</div>';
       h += '<div class="hints"><button type="button" class="hint-btn" data-act="hint"' + (shown >= p.hints.length ? ' disabled>힌트를 모두 보았습니다' : '>' + BULB + '힌트 보기 <small>' + shown + ' / ' + p.hints.length + '</small>') + '</button>'
         + p.hints.slice(0, shown).map((t, k) => '<div class="hint"><span class="hint-no">힌트 ' + (k + 1) + '</span><p>' + esc(t) + '</p></div>').join('') + '</div>';
-      if (p.options){
-        h += '<p class="pick-h" id="pickH">플레이어들이 합의한 답을 고르세요.</p><div class="opts" role="radiogroup" aria-labelledby="pickH">'
-          + p.options.map((o, k) => '<label class="opt' + (pick === k ? ' on' : '') + '"><input type="radio" name="opt" value="' + k + '"' + (pick === k ? ' checked' : '') + '>'
-            + '<span class="opt-no" aria-hidden="true">' + L[k] + '</span>' + lines(o) + '</label>').join('') + '</div>';
+      if (p.items){
+        h += '<p class="pick-h">플레이어들이 합의한 답을 항목마다 고르세요.</p>'
+          + p.items.map((it, j) => '<fieldset class="item" id="item-' + j + '"><legend><span class="item-no">' + (j + 1) + '</span><span>' + esc(it.q) + '</span></legend><div class="opts">'
+            + it.options.map((o, k) => '<label class="opt' + (pk[j] === k ? ' on' : '') + '"><input type="radio" name="it' + j + '" value="' + k + '"' + (pk[j] === k ? ' checked' : '') + '>'
+              + '<span class="opt-no" aria-hidden="true">' + L[k] + '</span><span class="opt-t">' + esc(o) + '</span></label>').join('')
+            + '</div></fieldset>').join('');
       } else {
         h += '<div class="hint-only"><p>이 문제는 답을 고르지 않습니다.</p><p>플레이어들이 위화감의 정체를 찾아내면 「넘기기」를 눌러 정답을 확인하세요.</p></div>';
       }
@@ -452,29 +501,41 @@ const QUIZ = null;
     }
 
     function answer(i){
-      const p = P[i], r = result(i), k = S.picks[p.id];
-      let v = '';
-      if (r === 'ok') v = '<div class="verdict ok">' + CHECK + '<span>정답입니다</span></div>';
-      else if (r === 'no') v = '<div class="verdict no"><span>아쉽게도 다른 답입니다</span>' + (k != null ? '<small>고른 답 ' + L[k] + '</small>' : '') + '</div>';
-      else if (r === 'note') v = '<div class="verdict note"><span>' + esc(p.notes[k]) + '</span></div>';
-      return head(i, p.atitle) + v
-        + '<div class="ans-card"><p class="ans-h">' + (p.options ? '정답 ' + L[p.answer] : '정답') + '</p>' + lines(p.reveal) + '</div>'
-        + '<div class="explain">' + p.explain.map(t => '<p>' + esc(t) + '</p>').join('') + '</div>'
+      const p = P[i];
+      let body = '';
+      if (p.items){
+        const sc = score(i), pk = S.picks[p.id] || [];
+        if (sc.kind === 'ok') body += '<div class="verdict ok">' + ICON.ok + '<span>모든 항목 정답입니다</span></div>';
+        else body += '<div class="verdict no"><span>' + sc.total + '개 항목 중 ' + sc.ok + '개 정답</span>' + (sc.note ? '<small>다른 결론 ' + sc.note + '개</small>' : '') + '</div>';
+        if (sc.note && p.note) body += '<p class="note-msg">' + esc(p.note) + '</p>';
+        body += '<ol class="ritems">' + p.items.map((it, j) => {
+          const s = itemState(p, j), k = pk[j];
+          return '<li class="ritem ' + s + '"><p class="ritem-q"><span class="mark" aria-label="' + ({ ok: '정답', no: '오답', note: '다른 결론' })[s] + '">' + ICON[s] + '</span>'
+            + '<span>' + (j + 1) + '. ' + esc(it.q) + '</span></p>'
+            + '<p class="ritem-a"><span class="tag">정답 ' + L[it.answer] + '</span>' + esc(it.options[it.answer]) + '</p>'
+            + (s !== 'ok' && k != null ? '<p class="ritem-p"><span class="tag">고른 답 ' + L[k] + '</span>' + esc(it.options[k]) + '</p>' : '')
+            + '</li>';
+        }).join('') + '</ol>';
+      } else {
+        body += '<div class="ans-card"><p class="ans-h">정답</p>' + lines(p.reveal) + '</div>';
+      }
+      return head(i, p.atitle) + body
+        + '<div class="explain"><p class="explain-h">해설</p>' + p.explain.map(t => '<p>' + esc(t) + '</p>').join('') + '</div>'
         + cue(p.next)
         + '<button type="button" class="btn-primary" data-act="next">' + (i === N - 1 ? '마치기' : '넘기기') + '</button>'
         + '<button type="button" class="prev" data-act="prev">이전 화면으로</button>';
     }
 
     function end(){
-      const scored = P.filter(p => p.options).length;
-      const ok = P.filter((p, i) => result(i) === 'ok').length;
-      const used = P.reduce((a, p) => a + Math.min(S.hints[p.id] || 0, p.hints.length), 0);
-      const word = { ok: '정답', no: '다른 답', note: '다른 결론', none: '힌트 문제' };
+      let ok = 0, total = 0, used = 0;
+      const rows = P.map((p, i) => {
+        const sc = score(i), n = Math.min(S.hints[p.id] || 0, p.hints.length);
+        ok += sc.ok; total += sc.total; used += n;
+        const label = sc.kind === 'none' ? '힌트 문제' : sc.kind === 'ok' ? '모두 정답' : sc.ok + ' / ' + sc.total + (sc.note ? ' · 다른 결론 ' + sc.note : '');
+        return '<li><span>' + esc(p.tab) + '</span><span class="r-res is-' + sc.kind + '">' + label + '</span><span class="r-h">' + (n ? '힌트 ' + n : '') + '</span></li>';
+      }).join('');
       return '<p class="eyebrow">기록</p><h2 class="v-title">모든 문제를 마쳤습니다</h2>'
-        + '<div class="panel"><p class="score"><b>' + ok + '</b>/ ' + scored + '문제 정답</p><p class="score-sub">힌트 ' + used + '번 사용</p><ol class="record">'
-        + P.map((p, i) => { const r = result(i), n = Math.min(S.hints[p.id] || 0, p.hints.length);
-            return '<li><span>' + esc(p.tab) + '</span><span class="r-res is-' + r + '">' + word[r] + '</span><span class="r-h">' + (n ? '힌트 ' + n : '') + '</span></li>'; }).join('')
-        + '</ol></div>'
+        + '<div class="panel"><p class="score"><b>' + ok + '</b>/ ' + total + '항목 정답</p><p class="score-sub">힌트 ' + used + '번 사용</p><ol class="record">' + rows + '</ol></div>'
         + '<button type="button" class="btn-ghost" data-act="restart">처음부터 다시 하기</button>'
         + '<button type="button" class="prev" data-act="prev">이전 화면으로</button>';
     }
@@ -482,7 +543,7 @@ const QUIZ = null;
     function renderProg(){
       const c = at(S.step);
       progEl.innerHTML = P.map((p, i) => {
-        let cls = S.step >= 2 + 2 * i ? 'r-' + result(i) : '';
+        let cls = S.step >= 2 + 2 * i ? 'r-' + score(i).kind : '';
         const cur = (c.kind === 'q' || c.kind === 'a') && c.i === i;
         if (cur) cls += ' cur';
         return '<li class="' + cls.trim() + '"' + (cur ? ' aria-current="step"' : '') + '>' + esc(p.tab) + '</li>';
@@ -515,10 +576,13 @@ const QUIZ = null;
     resetBtn.addEventListener('click', askReset);
 
     box.addEventListener('change', e => {
-      const r = e.target.closest('input[name="opt"]'); if (!r) return;
+      const r = e.target.closest('input[type="radio"]'); if (!r) return;
       const c = at(S.step); if (c.kind !== 'q') return;
-      S.picks[P[c.i].id] = +r.value; save();
-      box.querySelectorAll('.opt').forEach(el => el.classList.toggle('on', el.contains(r)));
+      const j = +r.name.slice(2);
+      picksOf(P[c.i])[j] = +r.value; save();
+      const fs = r.closest('.item');
+      fs.classList.remove('missing');
+      fs.querySelectorAll('.opt').forEach(el => el.classList.toggle('on', el.contains(r)));
     });
     box.addEventListener('click', e => {
       const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
@@ -535,11 +599,18 @@ const QUIZ = null;
       }
       else if (act === 'reveal' && c.kind === 'q'){
         const p = P[c.i];
-        if (p.options){
-          const k = S.picks[p.id];
-          if (k == null){ toast('플레이어들이 고른 답을 먼저 선택해 주세요.'); return; }
+        if (p.items){
+          const pk = S.picks[p.id] || [];
+          const missing = p.items.map((_, j) => j).filter(j => pk[j] == null);
+          if (missing.length){
+            toast((missing[0] + 1) + '번 항목의 답을 아직 고르지 않았어요.');
+            missing.forEach(j => { const el = document.getElementById('item-' + j); if (el) el.classList.add('missing'); });
+            const first = document.getElementById('item-' + missing[0]);
+            if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            return;
+          }
           openConfirm('이 답으로 정답을 확인할까요?',
-            '<div class="opt on"><span class="opt-no">' + L[k] + '</span>' + lines(p.options[k]) + '</div>',
+            '<ol class="sum">' + p.items.map((it, j) => '<li><span class="sum-n">' + (j + 1) + '</span><span class="sum-k">' + L[pk[j]] + '</span><span>' + esc(it.options[pk[j]]) + '</span></li>').join('') + '</ol>',
             '정답 확인', () => go(S.step + 1));
         } else {
           openConfirm(p.tab + '의 정답을 확인할까요?', '<p class="confirm-p">플레이어들이 충분히 이야기를 나눈 뒤에 확인하세요.</p>', '정답 확인', () => go(S.step + 1));
