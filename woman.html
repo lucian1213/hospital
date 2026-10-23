@@ -89,7 +89,6 @@ body[data-role="man"]{--glow:rgba(160,170,240,.36)}
 .tile[aria-disabled="true"]:active{transform:none}
 .h.soon{padding:2px 9px;border:1px solid var(--lav-faint);border-radius:999px}
 .tile:focus-visible,.back:focus-visible,.btn-primary:focus-visible,.btn-ghost:focus-visible,.yt:focus-visible{outline:2px solid var(--moon);outline-offset:3px}
-[data-bgm-slot]{display:contents}
 .menu-note{margin-top:2px;font-size:13.5px;text-align:center;color:var(--lav-dim);word-break:keep-all}
 .figs{display:block;width:250px;margin:44px auto 0;opacity:.85}
 
@@ -141,6 +140,8 @@ body[data-role="man"]{--glow:rgba(160,170,240,.36)}
 
 .video{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--lav-line);border-radius:3px;overflow:hidden;background:#0d0718}
 .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.bgm-rules{margin:16px 0 0}
+.bgm-rules li{font-size:15px}
 .yt{display:inline-block;margin-top:14px;padding:6px 0;font-size:15px;color:var(--moon);border-bottom:1px solid rgba(236,201,156,.4)}
 
 /* 저장 시트 */
@@ -302,7 +303,7 @@ a.btn-ghost{display:flex;align-items:center;justify-content:center;margin-top:16
  </header>
  <nav class="menu" aria-label="메뉴">
 <a class="tile primary" href="#letter"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg><span class="t">게임 시작 전</span><span class="h">편지 쓰기</span></a>
-<span data-bgm-slot><button type="button" class="tile" aria-disabled="true" data-soon="수상한 한의원 BGM"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M9 17V5l10-2v12"/><circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="15" r="2.2"/></svg><span class="t">수상한 한의원 BGM</span><span class="h soon">준비 중</span></button></span>
+<a class="tile" href="#bgm"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M9 17V5l10-2v12"/><circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="15" r="2.2"/></svg><span class="t">수상한 한의원 BGM</span><span class="h">음악 듣기</span></a>
 <a class="tile" href="#pv"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></svg><span class="t">수상한 한의원 원작 PV</span><span class="h">영상 보기</span></a>
 <p class="menu-note">BGM은 두 귀신 중 한 사람만 틀어 주세요.</p>
  </nav>
@@ -341,6 +342,17 @@ a.btn-ghost{display:flex;align-items:center;justify-content:center;margin-top:16
   <p class="tiny">저장이 되지 않으면 위 사진을 길게 눌러 저장할 수 있어요.</p>
  </div>
 </div>
+<section class="view" data-view="bgm" hidden>
+ <div class="bar"><a class="back" href="#"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg><span>처음으로</span></a><span class="bar-role">여성 귀신</span></div>
+ <h2 class="v-title">수상한 한의원 BGM</h2>
+ <div class="video"><iframe id="bgmFrame" title="수상한 한의원 BGM" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
+ <ul class="rules bgm-rules">
+  <li>BGM은 두 귀신 중 한 사람만 틀어 주세요.</li>
+  <li>재생을 누르면 끝나도 처음부터 다시 반복됩니다.</li>
+  <li id="bgmWake">화면이 꺼지면 음악이 멈출 수 있어요. 진행하는 동안 화면 자동 꺼짐을 잠시 꺼 두세요.</li>
+ </ul>
+ <a class="yt" id="bgmLink" href="#" target="_blank" rel="noopener">유튜브 앱에서 듣기</a>
+</section>
 <section class="view" data-view="pv" hidden>
  <div class="bar"><a class="back" href="#"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg><span>처음으로</span></a><span class="bar-role">여성 귀신</span></div>
  <h2 class="v-title">수상한 한의원 원작 PV</h2>
@@ -354,13 +366,13 @@ a.btn-ghost{display:flex;align-items:center;justify-content:center;margin-top:16
 /* ──────────────────────────────────────────────
    링크는 여기서 바꾸세요.
    pv  : 원작 PV 유튜브 주소
-   bgm : BGM 주소 (비워 두면 '준비 중'으로 표시)
+   bgm : BGM 유튜브 주소 (두 귀신 페이지에만 있음)
    ────────────────────────────────────────────── */
 const CONFIG = {
   "role": "woman",
   "roleName": "여성 귀신",
   "pv": "https://www.youtube.com/watch?v=53gbRd6UB1M",
-  "bgm": ""
+  "bgm": "https://youtu.be/yxZl0HcpZrI"
 };
 /* 정답 선택 페이지 문제 데이터 (승범 페이지에만 들어 있습니다) */
 const QUIZ = null;
@@ -383,16 +395,6 @@ const QUIZ = null;
     const s = e.target.closest('[data-soon]');
     if (s){ e.preventDefault(); toast('「' + s.dataset.soon + '」는 아직 준비 중입니다.'); }
   });
-  function activate(slotSel, url, hint){
-    const slot = $(slotSel); if (!slot || !url) return;
-    const btn = slot.querySelector('.tile'); if (!btn) return;
-    const a = document.createElement('a');
-    a.className = 'tile'; a.href = url; a.target = '_blank'; a.rel = 'noopener';
-    a.innerHTML = btn.innerHTML;
-    const h = a.querySelector('.h'); h.textContent = hint; h.classList.remove('soon');
-    btn.replaceWith(a);
-  }
-  activate('[data-bgm-slot]', CONFIG.bgm, '음악 열기');
 
   /* PV */
   function ytId(u){
@@ -404,6 +406,22 @@ const QUIZ = null;
   function loadPV(){ if (pvFrame && pvId && !pvFrame.src) pvFrame.src = 'https://www.youtube-nocookie.com/embed/' + pvId + '?rel=0&playsinline=1'; }
   function unloadPV(){ if (pvFrame && pvFrame.src) pvFrame.removeAttribute('src'); }
 
+  /* BGM — 반복 재생, 이 화면을 보는 동안 화면 꺼짐 방지 */
+  const bgmId = ytId(CONFIG.bgm);
+  const bgmFrame = $('#bgmFrame'), bgmLink = $('#bgmLink'), bgmWake = $('#bgmWake');
+  if (bgmLink) bgmLink.href = CONFIG.bgm;
+  const canWake = 'wakeLock' in navigator;
+  if (bgmWake && canWake) bgmWake.textContent = '이 화면을 열어 두는 동안에는 휴대폰 화면이 꺼지지 않습니다.';
+  let wake = null;
+  async function holdWake(){
+    if (!canWake || wake || document.visibilityState !== 'visible') return;
+    try { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } catch(e){}
+  }
+  function dropWake(){ if (wake){ wake.release().catch(()=>{}); wake = null; } }
+  function loadBGM(){ if (bgmFrame && bgmId && !bgmFrame.src) bgmFrame.src = 'https://www.youtube-nocookie.com/embed/' + bgmId + '?rel=0&playsinline=1&loop=1&playlist=' + bgmId; }
+  function unloadBGM(){ if (bgmFrame && bgmFrame.src) bgmFrame.removeAttribute('src'); }
+  document.addEventListener('visibilitychange', () => { if ((location.hash.slice(1)) === 'bgm') holdWake(); });
+
   /* 화면 전환 */
   const views = document.querySelectorAll('[data-view]');
   function route(){
@@ -414,6 +432,9 @@ const QUIZ = null;
       if (!sh.hidden){ sh.hidden = true; document.body.style.overflow = ''; }
     });
     if (target === 'pv') loadPV(); else unloadPV();
+    /* BGM은 다른 화면으로 가도 계속 흐르게 두고, PV를 열 때만 멈춘다 */
+    if (target === 'bgm'){ loadBGM(); holdWake(); } else dropWake();
+    if (target === 'pv') unloadBGM();
     window.scrollTo(0, 0);
   }
   addEventListener('hashchange', route); route();
