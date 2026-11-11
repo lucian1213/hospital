@@ -87,6 +87,9 @@ button{cursor:pointer}
 h2{font-family:var(--f-story);font-weight:700;font-size:20px;margin:0 0 4px;text-wrap:balance}
 .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 
+.opennote{display:flex;flex-direction:column;gap:4px;background:var(--paper);color:var(--ink);padding:16px 18px;margin-bottom:14px;font-size:14px}
+.opennote .label{color:#6b5a4c}
+.opennote b{font-family:var(--f-story);font-size:clamp(24px,6.5vw,32px);line-height:1.25}
 /* 약장 */
 .cabinet{background:linear-gradient(#2c1f16,#1e150f);border:1px solid #0c0806;padding:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 50px -30px #000}
 .dow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:6px;text-align:center;font-family:var(--f-story);color:var(--muted);font-size:13px}
@@ -253,7 +256,7 @@ td .btn{margin-right:4px}
    설정 — 운영 전에 이 부분만 고치면 됩니다
    ============================================================ */
 const CONFIG = {
-  start: '2026-11-23',            // 11월 4주차 월요일
+  start: '2026-11-30',            // 첫 운영일 (월요일)
   end:   '2027-01-29',            // 1월 마지막 금요일
   closed: ['2026-12-25', '2027-01-01'],     // 휴관일 (성탄절·신정)
   times: ['11:00', '13:30', '16:00', '19:30'],
@@ -472,7 +475,7 @@ function viewBooking() {
       <div class="label">수상한 한의원 · 3인 전용 테마</div>
       <h1>RE:WIND<i aria-hidden="true"></i></h1>
       <dl class="facts">
-        <dt>기간</dt><dd>2026. 11. 23 (월) – 2027. 1. 29 (금) · 평일 운영</dd>
+        <dt>기간</dt><dd>2026. 11. 30 (월) – 2027. 1. 29 (금) · 평일 운영</dd>
         <dt>회차</dt><dd class="times mono">${CONFIG.times.map(t => `<span>${t}</span>`).join('')}</dd>
         <dt>인원</dt><dd>회차당 3인 1팀</dd>
         <dt>장소</dt><dd>${esc(CONFIG.place)}</dd>
@@ -522,6 +525,7 @@ function viewBooking() {
 
   const cab = `
     <h2 style="margin-bottom:14px">날짜 고르기</h2>
+    ${!isOpen() ? `<div class="opennote" role="status"><span class="label">예약 오픈</span><b>${esc(fmtAt(openAt()))}</b><span>이 시각부터 예약할 수 있습니다. 시간이 되면 새로고침 없이 열립니다.</span></div>` : ''}
     <div class="cabinet">
       <div class="dow">${['月월','火화','水수','木목','金금'].map(x => `<span><b>${x[0]}</b>${x[1]}</span>`).join('')}</div>
       <div class="grid">${drawers}</div>
@@ -544,7 +548,6 @@ function viewBooking() {
         }
         return `<div class="slot ${s === 'free' ? '' : s === 'mine' ? 'me' : 'off'}"><span class="n">${i + 1}회차</span><span><span class="t">${t}</span> <span class="st">· ${label}</span></span><span>${action}</span></div>${st.arm === id && s === 'free' ? bookForm(id, !!mine) : ''}`;
       }).join('')}
-      ${!open ? `<p class="sub" style="margin:12px 0 0">예약은 ${esc(fmtAt(openAt()))}에 열립니다. 시간이 되면 이 화면에서 바로 예약할 수 있습니다.</p>` : ''}
     </div>`;
 
   return `${hero}
