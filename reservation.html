@@ -521,8 +521,7 @@ function viewBooking() {
   }).join('');
 
   const cab = `
-    <h2>날짜 고르기</h2>
-    <p class="sub">서랍 하나가 하루입니다. 서랍을 누르면 그날의 회차가 열립니다.</p>
+    <h2 style="margin-bottom:14px">날짜 고르기</h2>
     <div class="cabinet">
       <div class="dow">${['月월','火화','水수','木목','金금'].map(x => `<span><b>${x[0]}</b>${x[1]}</span>`).join('')}</div>
       <div class="grid">${drawers}</div>
