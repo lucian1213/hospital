@@ -162,6 +162,7 @@ img{max-width:100%;-webkit-user-drag:none;pointer-events:none}
    1. 설정 — 여기만 고치면 내용이 바뀝니다
    ============================================================ */
 const CONFIG = {
+  owner: "마동석",       // 폰 주인 이름 (홈 화면 날짜 아래 표시). 빈 값이면 표시 안 함
   fixedTime: null,        // 예: "21:47" → 상태바·홈 시계를 고정. null이면 실제 시각
   fixedDate: null,        // 예: "11월 16일 월요일". null이면 실제 날짜
   battery: 78,            // 상태바 배터리 %
@@ -178,44 +179,16 @@ function sample(n, hue){
 }
 
 const DATA = {
-  /* 메신저: from 은 "me"(폰 주인) 또는 "them"(상대). image 에 경로를 넣으면 사진 메시지 */
-  chats: [
-    { id: "c1", name: "샘플 대화 A", color: "#5a7bd8", unread: 2, messages: [
-      { from: "them", date: "2026년 11월 15일", time: "오후 9:12", text: "샘플 메시지입니다." },
-      { from: "me",   date: "2026년 11월 15일", time: "오후 9:14", text: "여기에 대화 내용이 들어갑니다." },
-      { from: "them", date: "2026년 11월 16일", time: "오전 8:03", text: "날짜가 바뀌면 구분선이 생깁니다." },
-      { from: "them", date: "2026년 11월 16일", time: "오전 8:04", image: sample(1, 210) },
-      { from: "me",   date: "2026년 11월 16일", time: "오전 8:20", text: "긴 문장은 이렇게 말풍선 안에서 자동으로 줄바꿈됩니다. 사진 메시지를 누르면 크게 볼 수 있습니다." }
-    ]},
-    { id: "c2", name: "샘플 대화 B", color: "#c26a8f", unread: 0, messages: [
-      { from: "me",   date: "2026년 11월 14일", time: "오후 2:30", text: "두 번째 대화방입니다." },
-      { from: "them", date: "2026년 11월 14일", time: "오후 2:41", text: "확인했습니다." }
-    ]},
-    { id: "c3", name: "샘플 단체방", color: "#4c9c86", unread: 0, messages: [
-      { from: "them", sender: "참가자 1", date: "2026년 11월 12일", time: "오전 11:00", text: "단체방은 보낸 사람 이름이 표시됩니다." },
-      { from: "them", sender: "참가자 2", date: "2026년 11월 12일", time: "오전 11:02", text: "네." }
-    ]}
-  ],
+  /* 메신저: { id, name, color, unread, messages:[{ from:"me"|"them", date, time, text 또는 image }] } */
+  chats: [],
 
-  /* 통화: type 은 "in"(수신) / "out"(발신) / "missed"(부재중) */
+  /* 통화: type 은 "in"(수신) / "out"(발신) / "missed"(부재중). 위에 있을수록 최근 기록 */
   calls: [
-    { name: "샘플 연락처 A", number: "010-0000-0001", type: "missed", date: "11월 16일", time: "오전 7:52", duration: "" },
-    { name: "샘플 연락처 A", number: "010-0000-0001", type: "out",    date: "11월 15일", time: "오후 10:31", duration: "3분 12초" },
-    { name: "샘플 연락처 B", number: "010-0000-0002", type: "in",     date: "11월 15일", time: "오후 6:05",  duration: "12분 40초" },
-    { name: "",              number: "02-000-0000",   type: "missed", date: "11월 14일", time: "오후 1:17",  duration: "" },
-    { name: "샘플 연락처 C", number: "010-0000-0003", type: "in",     date: "11월 13일", time: "오전 9:48",  duration: "48초" }
+    { name: "유진 ❤️", number: "010-0000-0000", type: "out", date: "11월 15일", time: "오후 11:15", duration: "4분 32초" }
   ],
 
-  /* 갤러리: src 에 "photos/01.jpg" 같은 경로. date 가 같은 사진끼리 묶입니다 */
-  photos: [
-    { src: sample(1, 210), date: "11월 16일", caption: "" },
-    { src: sample(2, 20),  date: "11월 16일", caption: "" },
-    { src: sample(3, 140), date: "11월 15일", caption: "사진 설명을 넣을 수 있습니다" },
-    { src: sample(4, 280), date: "11월 15일", caption: "" },
-    { src: sample(5, 60),  date: "11월 15일", caption: "" },
-    { src: sample(6, 330), date: "11월 12일", caption: "" },
-    { src: sample(7, 180), date: "11월 12일", caption: "" }
-  ]
+  /* 갤러리: { src:"photos/01.jpg", date, caption } */
+  photos: []
 };
 
 /* ============================================================
@@ -259,7 +232,7 @@ const VIEWS = {
     const unread = DATA.chats.reduce((n, c) => n + (c.unread || 0), 0);
     const missed = DATA.calls.filter(c => c.type === "missed").length;
     return `<div class="view home">
-      <div class="clock"><div class="t" id="home-time">${nowText()}</div><div class="d">${esc(dateText())}</div></div>
+      <div class="clock"><div class="t" id="home-time">${nowText()}</div><div class="d">${esc(dateText())}</div>${CONFIG.owner ? `<div class="d" style="margin-top:4px;font-size:13px;opacity:.8">${esc(CONFIG.owner)}</div>` : ""}</div>
       <div class="dock">
         <button class="app" data-go="messages"><span class="ic msg">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ""}</span>메신저</button>
         <button class="app" data-go="calls"><span class="ic call">${ICON.call}${missed ? `<span class="badge">${missed}</span>` : ""}</span>통화</button>
