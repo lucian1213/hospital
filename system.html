@@ -657,7 +657,7 @@
           display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; background: #e9eef3;
           box-shadow: 0 18px 50px rgba(6,14,30,.45), 0 0 0 1px rgba(20,30,50,.35); font-family: "Noto Sans KR", system-ui, sans-serif;
           opacity: .9; transition: opacity .25s, box-shadow .25s, transform .25s; }
-  #chat.left { right: auto; left: calc(50vw - 220px); bottom: auto; top: max(70px, calc(50vh - 350px)); }   /* 첫 화면: 거의 정가운데 */
+  #chat.left { right: auto; left: 26vw; bottom: auto; top: 19.5vh; height: clamp(420px, 50vh, 580px); }   /* 첫 화면: 거의 정가운데 */
   #chat.a-out { animation: chOut .22s ease-in both; }
   @keyframes chOut { to { opacity: 0; transform: translateY(18px) scale(.97); } }
   .ch-div { display: flex; align-items: center; gap: 10px; margin: 10px 2px 4px; font-size: 11.5px; color: #7f8a9b; }
@@ -2408,7 +2408,7 @@
     chEl.style.left = "";
     if (!loginView.hidden) {                   // 첫 화면: 로그인 창을 가리지 않는 선에서 가장 가운데로
       var cardL = $("loginForm").getBoundingClientRect().left, w = chEl.offsetWidth;
-      chEl.style.left = Math.max(12, Math.min(window.innerWidth / 2 - w / 2, cardL - 110 - w)) + "px";
+      chEl.style.left = Math.max(12, Math.min(window.innerWidth * 0.26, cardL - 28 - w)) + "px";
     }
     if (!chDay) { chDay = true; chLine("오늘", "ch-day"); }
     else chLine(("0" + new Date().getHours()).slice(-2) + ":" + ("0" + new Date().getMinutes()).slice(-2), "ch-div");   // 단계 구분선
