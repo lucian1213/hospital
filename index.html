@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c11">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>가상 폰 화면</title>
+<style>
+/* 레이아웃: 상태바 / 화면(뷰 스택) / 하단 내비게이션 3단 고정. 스크롤은 각 뷰 안에서만. */
+:root{
+  color-scheme:dark;
+  --bg:#0a0c11;
+  --surface:#151a23;
+  --surface-2:#1f2632;
+  --text:#e8ecf3;
+  --sub:#8a93a5;
+  --accent:#4f8dff;
+  --missed:#ff6464;
+  --ok:#3fcf8e;
+  --line:rgba(255,255,255,.07);
+  --font:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#000;color:var(--text);font-family:var(--font);
+  overscroll-behavior:none;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+img{max-width:100%;-webkit-user-drag:none;pointer-events:none}
+
+#phone{position:relative;width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:600px){
+  #phone{width:390px;height:min(820px,96%);border-radius:36px;border:1px solid #2a3140;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+}
+
+/* 상태바 */
+#status{flex:none;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(8px + env(safe-area-inset-top)) 20px 6px;font-size:13px;font-weight:600;
+  font-variant-numeric:tabular-nums;position:relative;z-index:5}
+#status .icons{display:flex;align-items:center;gap:6px}
+#status svg{height:13px;width:auto;fill:currentColor}
+.batt{display:flex;align-items:center;gap:4px}
+.batt i{display:block;width:22px;height:11px;border:1.5px solid currentColor;border-radius:3px;padding:1px;position:relative}
+.batt i::after{content:"";position:absolute;right:-4px;top:2.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}
+.batt b{display:block;height:100%;background:currentColor;border-radius:1px}
+
+/* 화면 */
+#screen{flex:1;position:relative;min-height:0}
+.view{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);animation:in .18s ease-out}
+.view.back{animation:inback .18s ease-out}
+@keyframes in{from{opacity:.4;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes inback{from{opacity:.4;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view,.view.back{animation:none}}
+.scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+.appbar{flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px 12px}
+.appbar h1{font-size:22px;font-weight:700;letter-spacing:-.02em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appbar.sm h1{font-size:17px}
+.appbar .ib{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;margin-left:-8px}
+.appbar .ib:active{background:var(--surface-2)}
+.appbar svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.empty{padding:80px 24px;text-align:center;color:var(--sub);font-size:14px}
+
+/* 홈 */
+.home{background:
+  radial-gradient(120% 70% at 85% 0%,#23406e 0%,transparent 60%),
+  radial-gradient(90% 60% at 0% 100%,#3a2350 0%,transparent 65%),
+  #0a0c11}
+.home .clock{padding:56px 28px 0}
+.home .clock .t{font-size:72px;font-weight:300;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.home .clock .d{margin-top:10px;font-size:15px;color:rgba(255,255,255,.75)}
+.dock{display:flex;justify-content:space-around;gap:8px;margin:auto 16px 14px;padding:16px 8px;
+  border-radius:28px;background:rgba(255,255,255,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.app{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;width:76px}
+.app .ic{position:relative;width:58px;height:58px;border-radius:19px;display:grid;place-items:center;transition:transform .1s}
+.app:active .ic{transform:scale(.92)}
+.app .ic svg{width:30px;height:30px;fill:#fff}
+.app .badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;
+  background:var(--missed);font-size:11px;font-weight:700;display:grid;place-items:center}
+.ic.msg{background:linear-gradient(145deg,#5a9bff,#3567e0)}
+.ic.call{background:linear-gradient(145deg,#4bdc9b,#1f9f68)}
+.ic.gal{background:linear-gradient(145deg,#ff8a6b,#d9478a)}
+
+/* 목록 공통 */
+.row{display:flex;align-items:center;gap:14px;width:100%;padding:12px 18px;text-align:left}
+.row:active{background:var(--surface)}
+.avatar{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:17px;color:#fff}
+.row .main{flex:1;min-width:0}
+.row .name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .prev{margin-top:3px;font-size:13.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.unread{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+
+/* 대화방 */
+.chat{padding:8px 14px 16px;display:flex;flex-direction:column;gap:6px}
+.day{align-self:center;margin:10px 0 6px;padding:4px 12px;border-radius:12px;background:var(--surface);color:var(--sub);font-size:12px}
+.msg{display:flex;align-items:flex-end;gap:6px;max-width:100%}
+.msg.me{flex-direction:row-reverse}
+.bubble{max-width:74%;padding:9px 13px;border-radius:18px;font-size:15px;line-height:1.42;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--surface-2);border-bottom-left-radius:6px}
+.msg.me .bubble{background:var(--accent);color:#fff;border-radius:18px;border-bottom-right-radius:6px}
+.bubble.pic{padding:4px;overflow:hidden}
+.bubble.pic img{display:block;width:200px;border-radius:14px;pointer-events:auto}
+.msg time{font-size:11px;color:var(--sub);flex:none;font-variant-numeric:tabular-nums}
+.composer{flex:none;display:flex;align-items:center;gap:10px;padding:8px 14px 10px;border-top:1px solid var(--line)}
+.composer div{flex:1;padding:10px 16px;border-radius:20px;background:var(--surface);color:var(--sub);font-size:14px}
+
+/* 통화 */
+.tabs{flex:none;display:flex;gap:8px;padding:0 16px 10px}
+.tabs button{padding:7px 16px;border-radius:16px;font-size:13.5px;font-weight:600;color:var(--sub);background:var(--surface)}
+.tabs button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+.ctype{display:flex;align-items:center;gap:5px;margin-top:3px;font-size:13px;color:var(--sub)}
+.ctype svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.ctype.in svg{stroke:var(--ok)} .ctype.out svg{stroke:var(--accent)}
+.missed .name,.ctype.missed{color:var(--missed)}
+.detail{margin:0 18px 8px 78px;padding:12px 14px;border-radius:14px;background:var(--surface);font-size:13.5px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+.detail dt{color:var(--sub)} .detail dd{font-variant-numeric:tabular-nums}
+
+/* 갤러리 */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 2px 16px}
+.grid button{aspect-ratio:1;overflow:hidden;background:var(--surface)}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.gsec{padding:14px 16px 8px;font-size:13.5px;font-weight:600;color:var(--sub)}
+.viewer{background:#000}
+.viewer .stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+.viewer .stage img{max-width:100%;max-height:100%;object-fit:contain}
+.viewer .meta{flex:none;padding:12px 18px 14px;font-size:13.5px;color:var(--sub);display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.viewer .meta span:first-child{color:var(--text);overflow-wrap:anywhere}
+
+/* 하단 내비게이션 */
+#nav{flex:none;display:flex;justify-content:space-around;align-items:center;
+  padding:4px 40px calc(6px + env(safe-area-inset-bottom));background:var(--bg);position:relative;z-index:5}
+#nav.clear{background:transparent;position:absolute;left:0;right:0;bottom:0}
+#nav button{width:64px;height:38px;border-radius:19px;display:grid;place-items:center}
+#nav button:active{background:rgba(255,255,255,.12)}
+#nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="status">
+    <span id="st-time"></span>
+    <span class="icons">
+      <svg viewBox="0 0 18 13" aria-hidden="true"><rect x="0" y="9" width="3" height="4" rx=".8"/><rect x="5" y="6" width="3" height="7" rx=".8"/><rect x="10" y="3" width="3" height="10" rx=".8"/><rect x="15" y="0" width="3" height="13" rx=".8"/></svg>
+      <svg viewBox="0 0 18 13" aria-hidden="true"><path d="M9 13 0 3.6a12.6 12.6 0 0 1 18 0z"/></svg>
+      <span class="batt"><span id="st-batt"></span><i><b id="st-battbar"></b></i></span>
+    </span>
+  </div>
+  <div id="screen"></div>
+  <div id="nav">
+    <button id="nav-home" aria-label="홈"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="4"/></svg></button>
+    <button id="nav-back" aria-label="뒤로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   1. 설정 — 여기만 고치면 내용이 바뀝니다
+   ============================================================ */
+const CONFIG = {
+  fixedTime: null,        // 예: "21:47" → 상태바·홈 시계를 고정. null이면 실제 시각
+  fixedDate: null,        // 예: "11월 16일 월요일". null이면 실제 날짜
+  battery: 78,            // 상태바 배터리 %
+  composerText: "메시지를 보낼 수 없습니다"   // 대화방 하단 입력칸 문구 (읽기 전용)
+};
+
+/* 사진 경로가 아직 없을 때 쓰는 자리표시 이미지 */
+function sample(n, hue){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${hue},45%,38%)"/><stop offset="1" stop-color="hsl(${hue+50},50%,18%)"/></linearGradient></defs>
+<rect width="600" height="600" fill="url(#g)"/>
+<text x="300" y="315" font-family="sans-serif" font-size="44" fill="rgba(255,255,255,.75)" text-anchor="middle">샘플 사진 ${n}</text></svg>`;
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+
+const DATA = {
+  /* 메신저: from 은 "me"(폰 주인) 또는 "them"(상대). image 에 경로를 넣으면 사진 메시지 */
+  chats: [
+    { id: "c1", name: "샘플 대화 A", color: "#5a7bd8", unread: 2, messages: [
+      { from: "them", date: "2026년 11월 15일", time: "오후 9:12", text: "샘플 메시지입니다." },
+      { from: "me",   date: "2026년 11월 15일", time: "오후 9:14", text: "여기에 대화 내용이 들어갑니다." },
+      { from: "them", date: "2026년 11월 16일", time: "오전 8:03", text: "날짜가 바뀌면 구분선이 생깁니다." },
+      { from: "them", date: "2026년 11월 16일", time: "오전 8:04", image: sample(1, 210) },
+      { from: "me",   date: "2026년 11월 16일", time: "오전 8:20", text: "긴 문장은 이렇게 말풍선 안에서 자동으로 줄바꿈됩니다. 사진 메시지를 누르면 크게 볼 수 있습니다." }
+    ]},
+    { id: "c2", name: "샘플 대화 B", color: "#c26a8f", unread: 0, messages: [
+      { from: "me",   date: "2026년 11월 14일", time: "오후 2:30", text: "두 번째 대화방입니다." },
+      { from: "them", date: "2026년 11월 14일", time: "오후 2:41", text: "확인했습니다." }
+    ]},
+    { id: "c3", name: "샘플 단체방", color: "#4c9c86", unread: 0, messages: [
+      { from: "them", sender: "참가자 1", date: "2026년 11월 12일", time: "오전 11:00", text: "단체방은 보낸 사람 이름이 표시됩니다." },
+      { from: "them", sender: "참가자 2", date: "2026년 11월 12일", time: "오전 11:02", text: "네." }
+    ]}
+  ],
+
+  /* 통화: type 은 "in"(수신) / "out"(발신) / "missed"(부재중) */
+  calls: [
+    { name: "샘플 연락처 A", number: "010-0000-0001", type: "missed", date: "11월 16일", time: "오전 7:52", duration: "" },
+    { name: "샘플 연락처 A", number: "010-0000-0001", type: "out",    date: "11월 15일", time: "오후 10:31", duration: "3분 12초" },
+    { name: "샘플 연락처 B", number: "010-0000-0002", type: "in",     date: "11월 15일", time: "오후 6:05",  duration: "12분 40초" },
+    { name: "",              number: "02-000-0000",   type: "missed", date: "11월 14일", time: "오후 1:17",  duration: "" },
+    { name: "샘플 연락처 C", number: "010-0000-0003", type: "in",     date: "11월 13일", time: "오전 9:48",  duration: "48초" }
+  ],
+
+  /* 갤러리: src 에 "photos/01.jpg" 같은 경로. date 가 같은 사진끼리 묶입니다 */
+  photos: [
+    { src: sample(1, 210), date: "11월 16일", caption: "" },
+    { src: sample(2, 20),  date: "11월 16일", caption: "" },
+    { src: sample(3, 140), date: "11월 15일", caption: "사진 설명을 넣을 수 있습니다" },
+    { src: sample(4, 280), date: "11월 15일", caption: "" },
+    { src: sample(5, 60),  date: "11월 15일", caption: "" },
+    { src: sample(6, 330), date: "11월 12일", caption: "" },
+    { src: sample(7, 180), date: "11월 12일", caption: "" }
+  ]
+};
+
+/* ============================================================
+   2. 화면 구성
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const scr = $("#screen"), nav = $("#nav");
+let stack = [{ name: "home" }];
+let callFilter = "all";
+const openCalls = new Set();
+
+const ICON = {
+  back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  msg: '<svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.7 2 11.3c0 2.6 1.5 5 3.800 6.500L5 21.500l4.300-2.200c.9.2 1.800.3 2.700.3 5.500 0 10-3.700 10-8.300S17.500 3 12 3z"/></svg>',
+  call: '<svg viewBox="0 0 24 24"><path d="M6.600 10.800a15.100 15.100 0 0 0 6.600 6.600l2.200-2.200c.3-.3.7-.4 1-.2 1.100.4 2.300.6 3.600.6.600 0 1 .4 1 1V20c0 .600-.4 1-1 1C10.600 21 3 13.400 3 4c0-.6.4-1 1-1h3.500c.6 0 1 .4 1 1 0 1.300.2 2.500.6 3.600.1.300 0 .700-.2 1z"/></svg>',
+  gal: '<svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3.500 4a1.500 1.500 0 1 0 0 3 1.500 1.500 0 0 0 0-3zM5 18h14l-4.500-6-3.500 4.500-2.500-3z"/></svg>',
+  in: '<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 9v9h9"/></svg>',
+  out: '<svg viewBox="0 0 24 24"><path d="M6 18 18 6M9 6h9v9"/></svg>',
+  missed: '<svg viewBox="0 0 24 24"><path d="M4 8l8 7 8-7M4 8v5M4 8h5"/></svg>'
+};
+const CALL_LABEL = { in: "수신", out: "발신", missed: "부재중" };
+
+function nowText(){
+  if (CONFIG.fixedTime) return CONFIG.fixedTime;
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+function dateText(){
+  if (CONFIG.fixedDate) return CONFIG.fixedDate;
+  const d = new Date();
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일`;
+}
+function tick(){
+  $("#st-time").textContent = nowText();
+  const hc = $("#home-time"); if (hc) hc.textContent = nowText();
+}
+
+const VIEWS = {
+  home(){
+    const unread = DATA.chats.reduce((n, c) => n + (c.unread || 0), 0);
+    const missed = DATA.calls.filter(c => c.type === "missed").length;
+    return `<div class="view home">
+      <div class="clock"><div class="t" id="home-time">${nowText()}</div><div class="d">${esc(dateText())}</div></div>
+      <div class="dock">
+        <button class="app" data-go="messages"><span class="ic msg">${ICON.msg}${unread ? `<span class="badge">${unread}</span>` : ""}</span>메신저</button>
+        <button class="app" data-go="calls"><span class="ic call">${ICON.call}${missed ? `<span class="badge">${missed}</span>` : ""}</span>통화</button>
+        <button class="app" data-go="gallery"><span class="ic gal">${ICON.gal}</span>갤러리</button>
+      </div>
+      <div style="height:44px"></div>
+    </div>`;
+  },
+
+  messages(){
+    const rows = DATA.chats.map(c => {
+      const last = c.messages[c.messages.length - 1];
+      const prev = last ? (last.image ? "사진" : last.text) : "";
+      return `<button class="row" data-go="chat" data-id="${esc(c.id)}">
+        <span class="avatar" style="background:${esc(c.color || "#556")}">${esc(c.name.trim().slice(0, 1))}</span>
+        <span class="main"><span class="name">${esc(c.name)}</span><div class="prev">${esc(prev)}</div></span>
+        <span class="side">${last ? esc(last.time) : ""}${c.unread ? `<span class="unread">${c.unread}</span>` : ""}</span>
+      </button>`;
+    }).join("");
+    return `<div class="view"><div class="appbar"><h1>메신저</h1></div>
+      <div class="scroll">${rows || '<div class="empty">대화가 없습니다</div>'}</div></div>`;
+  },
+
+  chat(r){
+    const c = DATA.chats.find(x => x.id === r.id);
+    if (!c) return VIEWS.messages();
+    c.unread = 0;
+    let day = null;
+    const body = c.messages.map((m, i) => {
+      let h = "";
+      if (m.date && m.date !== day){ day = m.date; h += `<div class="day">${esc(m.date)}</div>`; }
+      const who = m.from === "me" ? "me" : "them";
+      const sender = m.sender && who === "them" ? `<div style="font-size:12px;color:var(--sub);margin:4px 0 0 4px">${esc(m.sender)}</div>` : "";
+      const inner = m.image
+        ? `<button class="bubble pic" data-go="image" data-src="${esc(m.image)}" aria-label="사진 크게 보기"><img src="${esc(m.image)}" alt=""></button>`
+        : `<div class="bubble">${esc(m.text)}</div>`;
+      return h + sender + `<div class="msg ${who}">${inner}<time>${esc(m.time || "")}</time></div>`;
+    }).join("");
+    return `<div class="view"><div class="appbar sm"><button class="ib" data-back aria-label="뒤로">${ICON.back}</button><h1>${esc(c.name)}</h1></div>
+      <div class="scroll" data-bottom><div class="chat">${body || '<div class="empty">메시지가 없습니다</div>'}</div></div>
+      <div class="composer"><div>${esc(CONFIG.composerText)}</div></div></div>`;
+  },
+
+  image(r){
+    return `<div class="view viewer"><div class="appbar sm"><button class="ib" data-back aria-label="뒤로">${ICON.back}</button><h1></h1></div>
+      <div class="stage"><img src="${esc(r.src)}" alt=""></div><div class="meta"></div></div>`;
+  },
+
+  calls(){
+    const list = DATA.calls.map((c, i) => ({ c, i })).filter(x => callFilter === "all" || x.c.type === "missed");
+    const rows = list.map(({ c, i }) => {
+      const title = c.name || c.number;
+      const open = openCalls.has(i);
+      return `<button class="row ${c.type === "missed" ? "missed" : ""}" data-call="${i}" aria-expanded="${open}">
+        <span class="avatar" style="background:var(--surface-2)">${esc(c.name ? c.name.trim().slice(0, 1) : "#")}</span>
+        <span class="main"><span class="name">${esc(title)}</span>
+          <div class="ctype ${c.type}">${ICON[c.type] || ""}${CALL_LABEL[c.type] || ""}</div></span>
+        <span class="side"><span>${esc(c.date)}</span><span>${esc(c.time)}</span></span>
+      </button>` + (open ? `<dl class="detail">
+        <dt>번호</dt><dd>${esc(c.number)}</dd>
+        <dt>구분</dt><dd>${CALL_LABEL[c.type] || ""}</dd>
+        <dt>일시</dt><dd>${esc(c.date)} ${esc(c.time)}</dd>
+        <dt>통화 시간</dt><dd>${esc(c.duration || "연결되지 않음")}</dd></dl>` : "");
+    }).join("");
+    return `<div class="view"><div class="appbar"><h1>통화 기록</h1></div>
+      <div class="tabs">
+        <button data-filter="all" aria-pressed="${callFilter === "all"}">전체</button>
+        <button data-filter="missed" aria-pressed="${callFilter === "missed"}">부재중</button>
+      </div>
+      <div class="scroll">${rows || '<div class="empty">통화 기록이 없습니다</div>'}</div></div>`;
+  },
+
+  gallery(){
+    let html = "", day = null, open = false;
+    DATA.photos.forEach((p, i) => {
+      if (p.date !== day){
+        if (open) html += "</div>";
+        day = p.date; open = true;
+        html += `<div class="gsec">${esc(p.date || "")}</div><div class="grid">`;
+      }
+      html += `<button data-go="photo" data-index="${i}" aria-label="사진 ${i + 1}"><img src="${esc(p.src)}" alt="" loading="lazy"></button>`;
+    });
+    if (open) html += "</div>";
+    return `<div class="view"><div class="appbar"><h1>갤러리</h1><span style="font-size:13px;color:var(--sub)">${DATA.photos.length}장</span></div>
+      <div class="scroll">${html || '<div class="empty">사진이 없습니다</div>'}</div></div>`;
+  },
+
+  photo(r){
+    const p = DATA.photos[r.index];
+    if (!p) return VIEWS.gallery();
+    return `<div class="view viewer"><div class="appbar sm"><button class="ib" data-back aria-label="뒤로">${ICON.back}</button>
+        <h1>${esc(p.date || "")}</h1><span style="font-size:13px;color:var(--sub)">${r.index + 1} / ${DATA.photos.length}</span></div>
+      <div class="stage" data-swipe><img src="${esc(p.src)}" alt=""></div>
+      <div class="meta"><span>${esc(p.caption || "")}</span><span></span></div></div>`;
+  }
+};
+
+function render(dir){
+  const r = stack[stack.length - 1];
+  const keep = dir === "same" ? ($(".scroll", scr)?.scrollTop ?? 0) : null;
+  scr.innerHTML = (VIEWS[r.name] || VIEWS.home)(r);
+  const v = scr.firstElementChild;
+  if (dir === "back") v.classList.add("back");
+  if (dir === "same") v.style.animation = "none";
+  nav.classList.toggle("clear", r.name === "home");
+  const sc = $(".scroll", v);
+  if (sc){
+    if (keep !== null) sc.scrollTop = keep;
+    else if (sc.hasAttribute("data-bottom")) sc.scrollTop = sc.scrollHeight;
+  }
+}
+function go(route){ stack.push(route); render("fwd"); }
+function back(){ if (stack.length > 1){ stack.pop(); render("back"); } }
+function home(){ if (stack.length > 1){ stack = [{ name: "home" }]; render("back"); } }
+
+/* 탭 처리 */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.id === "nav-back" || t.hasAttribute("data-back")) return back();
+  if (t.id === "nav-home") return home();
+  if (t.dataset.go){
+    const r = { name: t.dataset.go };
+    if (t.dataset.id) r.id = t.dataset.id;
+    if (t.dataset.src) r.src = t.dataset.src;
+    if (t.dataset.index) r.index = +t.dataset.index;
+    return go(r);
+  }
+  if (t.dataset.filter){ callFilter = t.dataset.filter; return render("same"); }
+  if (t.dataset.call){
+    const i = +t.dataset.call;
+    openCalls.has(i) ? openCalls.delete(i) : openCalls.add(i);
+    return render("same");
+  }
+});
+
+/* 사진 좌우 넘기기 */
+let sx = null, sy = null;
+scr.addEventListener("touchstart", e => {
+  if (e.target.closest("[data-swipe]") && e.touches.length === 1){ sx = e.touches[0].clientX; sy = e.touches[0].clientY; } else sx = null;
+}, { passive: true });
+scr.addEventListener("touchend", e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+  if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+  movePhoto(dx < 0 ? 1 : -1);
+}, { passive: true });
+function movePhoto(step){
+  const r = stack[stack.length - 1];
+  if (r.name !== "photo") return;
+  const n = r.index + step;
+  if (n < 0 || n >= DATA.photos.length) return;
+  r.index = n; render(step > 0 ? "fwd" : "back");
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") movePhoto(1);
+  else if (e.key === "ArrowLeft") movePhoto(-1);
+  else if (e.key === "Escape") back();
+});
+
+/* ============================================================
+   3. 화면 고정 (OS처럼 보이게)
+   ============================================================ */
+document.addEventListener("contextmenu", e => e.preventDefault());            // 길게 누르기 메뉴
+document.addEventListener("dragstart", e => e.preventDefault());
+document.addEventListener("gesturestart", e => e.preventDefault());           // 핀치 확대
+document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
+/* 기기 뒤로가기 → 페이지를 떠나지 않고 화면 안에서 뒤로 */
+/* Chrome은 터치 없이 만든 기록을 뒤로가기에서 건너뛰므로, 터치할 때마다 기록을 다시 채운다 */
+let armed = false;
+function arm(){ if (armed) return; try { history.pushState({ os: 1 }, ""); armed = true; } catch (_) {} }
+addEventListener("popstate", () => { armed = false; back(); try { history.pushState({ os: 1 }, ""); } catch (_) {} });
+document.addEventListener("pointerdown", arm, true);
+arm(); armed = false;
+
+/* 화면 꺼짐 방지 */
+let wake = null;
+async function keepAwake(){
+  try { if ("wakeLock" in navigator && document.visibilityState === "visible") wake = await navigator.wakeLock.request("screen"); } catch (_) {}
+}
+document.addEventListener("visibilitychange", keepAwake);
+
+/* 설치하지 않고 브라우저로 열었을 때: 첫 터치에 전체화면 전환 */
+const installed = matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches;
+function firstTouch(){
+  keepAwake();
+  if (!installed && matchMedia("(pointer: coarse)").matches && !document.fullscreenElement){
+    try { document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch(() => {}); } catch (_) {}
+  }
+  try { window.screen.orientation.lock("portrait").catch(() => {}); } catch (_) {}
+}
+document.addEventListener("pointerdown", firstTouch);
+
+/* 오프라인 캐시 (HTTPS로 올렸을 때만 동작) */
+if ("serviceWorker" in navigator && location.protocol === "https:"){
+  try { navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (_) {}
+}
+
+/* 시작 */
+$("#st-batt").textContent = CONFIG.battery + "%";
+$("#st-battbar").style.width = Math.max(5, Math.min(100, CONFIG.battery)) + "%";
+render("same");
+tick(); setInterval(tick, 5000);
+</script>
+</body>
+</html>
