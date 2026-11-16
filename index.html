@@ -180,11 +180,27 @@ function sample(n, hue){
 
 const DATA = {
   /* 메신저: { id, name, color, unread, messages:[{ from:"me"|"them", date, time, text 또는 image }] } */
-  chats: [],
+  chats: [
+    { id: "c1", name: "박준호", color: "#5a7bd8", unread: 0, messages: [
+      { from: "them", date: "2026년 10월 24일", time: "오후 8:41", text: "잘 들어갔냐" },
+      { from: "me",   date: "2026년 10월 24일", time: "오후 8:43", text: "ㅇㅇ 방금 도착. 운전하느라 고생했다" },
+      { from: "them", date: "2026년 10월 24일", time: "오후 8:44", text: "야 진짜 다음부터 너랑 같은 방 안 쓴다ㅋㅋㅋ" },
+      { from: "me",   date: "2026년 10월 24일", time: "오후 8:45", text: "왜 또 코골이 때문에? ㅋㅋ" },
+      { from: "them", date: "2026년 10월 24일", time: "오후 8:45", text: "어 이틀 내내 한숨도 못 잤다" },
+      { from: "me",   date: "2026년 10월 24일", time: "오후 8:47", text: "미안ㅋㅋ 다음엔 방 두 개 잡자" },
+      { from: "them", date: "2026년 10월 24일", time: "오후 8:47", text: "방값은 니가 내라" }
+    ]}
+  ],
 
   /* 통화: type 은 "in"(수신) / "out"(발신) / "missed"(부재중). 위에 있을수록 최근 기록 */
   calls: [
-    { name: "유진 ❤️", number: "010-0000-0000", type: "out", date: "11월 15일", time: "오후 11:15", duration: "4분 32초" }
+    { name: "유진 ❤️", number: "010-0000-0000", type: "out",    date: "11월 15일", time: "오후 11:15", duration: "4분 32초" },
+    { name: "유진 ❤️", number: "010-0000-0000", type: "in",     date: "11월 15일", time: "오후 6:52",  duration: "1분 08초" },
+    { name: "엄마",    number: "010-0000-0001", type: "out",    date: "11월 14일", time: "오후 7:30",  duration: "6분 15초" },
+    { name: "엄마",    number: "010-0000-0001", type: "missed", date: "11월 14일", time: "오후 2:11",  duration: "" },
+    { name: "유진 ❤️", number: "010-0000-0000", type: "out",    date: "11월 13일", time: "오후 10:48", duration: "23분 40초" },
+    { name: "박준호",  number: "010-0000-0002", type: "in",     date: "11월 12일", time: "오후 12:34", duration: "2분 51초" },
+    { name: "유진 ❤️", number: "010-0000-0000", type: "in",     date: "11월 11일", time: "오후 9:20",  duration: "15분 03초" }
   ],
 
   /* 갤러리: { src:"photos/01.jpg", date, caption } */
