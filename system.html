@@ -653,7 +653,7 @@
 
   /* =================== 사내 메신저 (안내 · 대사) =================== */
   .guide { display: none !important; }           /* 예전 안내 팝업은 메신저 대화로 대체 */
-  #chat { position: fixed; right: 9vw; bottom: 15vh; z-index: 120; width: min(440px, calc(100vw - 36px)); height: min(580px, calc(100vh - 110px));   /* 길이 고정: 메시지가 늘어도 창 크기는 그대로 */
+  #chat { position: fixed; right: 9vw; bottom: min(24vh, calc(100vh - 640px)); z-index: 120; width: min(440px, calc(100vw - 36px)); height: min(580px, calc(100vh - 110px));   /* 길이 고정: 메시지가 늘어도 창 크기는 그대로 */
           display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; background: #e9eef3;
           box-shadow: 0 18px 50px rgba(6,14,30,.45), 0 0 0 1px rgba(20,30,50,.35); font-family: "Noto Sans KR", system-ui, sans-serif;
           opacity: .9; transition: opacity .25s, box-shadow .25s, transform .25s; }
@@ -662,9 +662,9 @@
   @keyframes chOut { to { opacity: 0; transform: translateY(18px) scale(.97); } }
   .ch-div { display: flex; align-items: center; gap: 10px; margin: 10px 2px 4px; font-size: 11.5px; color: #7f8a9b; }
   .ch-div::before, .ch-div::after { content: ""; flex: 1; height: 1px; background: #c3ccd8; }
-  .ch-msg.red .bb { color: #d0140c; font-weight: 800; font-size: 19px; background: #fff3f1; box-shadow: 0 0 0 1.5px #e0463c inset; }
+  .ch-msg.red .bb { color: #d0140c; font-weight: 800; font-size: 19px; }   /* 말풍선은 그대로, 글씨만 붉게 */
   /* 보고서가 열려 있을 때: 메신저는 오른쪽에 그대로 떠 있고, 보고서 창이 왼쪽으로 비켜 줌 */
-  #chat.mini { right: 18px; bottom: 44px; width: min(400px, 30vw); }
+  #chat.mini { right: 18px; bottom: min(15vh, calc(100vh - 640px)); width: min(400px, 30vw); }
   body.chat-side #caseWin { padding-right: calc(min(400px, 30vw) + 36px); padding-left: 16px; }
   #chat.a-in { animation: chIn .32s cubic-bezier(.2,.8,.3,1) both; }
   @keyframes chIn { from { opacity: 0; transform: translateY(26px) scale(.96); } }
@@ -2473,7 +2473,29 @@
     chEl.hidden = true;
     $("finale").hidden = false;
     (function tick2() { if ($("finale").hidden) return; var d = new Date(); $("fnClock").textContent = d.toTimeString().slice(0, 8); setTimeout(tick2, 1000); })();
-    if (SCARE_SFX) scareSound();
+    if (SCARE_SFX) { scareSound(); heartbeat(); }
+  }
+  // 그림자가 다가오는 동안 울리는 심장박동 (쿵-쿵 … 점점 빨라짐). 결말 화면이 닫히면 멈춤
+  function heartbeat() {
+    var c; try { c = audioCtx(); if (c.state === "suspended") c.resume(); } catch (_) { return; }
+    var t0 = c.currentTime + 0.25, next = t0;
+    function thump(t, vol, f) {
+      var o = c.createOscillator(), g = c.createGain(), lp = c.createBiquadFilter();
+      o.type = "sine"; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.55, t + 0.14);
+      lp.type = "lowpass"; lp.frequency.value = 220;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.connect(lp); lp.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.26);
+    }
+    (function plan() {
+      if ($("finale").hidden) return;
+      while (next < c.currentTime + 1.2) {
+        var k = Math.min(1, (next - t0) / 34);             // 0 → 1: 그림자가 가까워질수록
+        var gap = 0.92 - 0.50 * k, vol = 0.55 + 0.4 * k;   // 박동 간격 0.92초 → 0.42초, 점점 크게
+        thump(next, vol, 62); thump(next + gap * 0.3, vol * 0.75, 52);
+        next += gap;
+      }
+      setTimeout(plan, 400);
+    })();
   }
 
   // 사건 데이터의 scare 설정: 보고서를 처음 열고 delay(ms) 뒤에 한 번만 재생
